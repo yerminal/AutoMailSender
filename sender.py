@@ -47,11 +47,12 @@ def main():
     password = '********'
     sender = 'Abdullah Emir Gogusdere <eXXXXXX@metu.edu.tr>'
     save_mail = 'abemirgo@gmail.com'
+    csv_file_path = "deneme.csv"
 
     logger.info(", ".join([smtp_ssl_host, smtp_ssl_host, username, sender, save_mail]))
 
     chosens = []
-    profList = pd.read_csv('deneme.csv')
+    profList = pd.read_csv(csv_file_path)
     logger.info(profList)
 
     notSentprof = profList[profList.sent == 0]
@@ -72,7 +73,8 @@ def main():
     logger.info(f"Today's date ({datetime.today().strftime('%Y-%m-%d')}) is entered to check_today.txt")
     
     for lst in chosens:
-        chosenOne, index = lst[0], lst[1] 
+        chosenOne, index = lst[0], lst[1]
+        logger.info(f"Selected person: {chosenOne['profName']}")
         target = chosenOne["email"]
         titleOfRespect = genderToTitle(chosenOne["gender"])
         SurnameOfProf = fixSurname(chosenOne["surname"])
@@ -92,15 +94,20 @@ def main():
         msg['To'] = to
         logger.info('To: ' + msg['To'])
 
-        with open("message.txt", "r", encoding="utf-8") as f:
-            if titleOfRespect:
-                plaintxt = f"Dear {titleOfRespect} {SurnameOfProf},\n\n" + f.read()
-            else:
-                plaintxt = f"Dear {SurnameOfProf},\n\n" + f.read()
+        try:
+            with open("message.txt", "r", encoding="utf-8") as f:
+                if titleOfRespect:
+                    plaintxt = f"Dear {titleOfRespect} {SurnameOfProf},\n\n" + f.read()
+                else:
+                    plaintxt = f"Dear {SurnameOfProf},\n\n" + f.read()
+        except FileNotFoundError:
+            logger.info("Couldn't find message.txt, exiting...")
+            sys.exit("Couldn't find message.txt, exiting...")
 
-        logger.info("Message:\n" + plaintxt)
+        # logger.info("Message:\n" + plaintxt)
         txt = MIMEText(plaintxt)
         msg.attach(txt)
+        logger.info("Message attached.")
 
         file_path = "resumeAbdullah.pdf"
         file_name = "resumeAbdullah.pdf"
@@ -129,7 +136,7 @@ def main():
         try:
             profList.at[index, 'sent'] = 1
             logger.info(profList)
-            profList.to_csv("deneme.csv", index=False)
+            profList.to_csv(csv_file_path, index=False)
         except Exception:
             logger.exception("Couldn't save the csv file.")
 
