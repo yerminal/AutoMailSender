@@ -66,7 +66,16 @@ def main():
         temp = notSentprof[notSentprof.university == uni].iloc[[0]]
         temp_index = temp.index[0]
         chosens.append([temp.iloc[0], temp_index])
-
+    
+    try:
+        server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
+        server.login(username, password)
+        print(f"Connected to {smtp_ssl_host}:{smtp_ssl_port}")
+        logger.info(f"Connected to {smtp_ssl_host}:{smtp_ssl_port}")
+    except Exception:
+        logger.exception(f"Couldn't connect to {smtp_ssl_host}:{smtp_ssl_port} with the username {username} or the password")
+        sys.exit(f"Couldn't connect to {smtp_ssl_host}:{smtp_ssl_port} with the username {username} or the password")
+            
     with open("check_today.txt", "a") as f:
         f.write("\n")
         f.write(datetime.today().strftime('%Y-%m-%d'))  
@@ -117,14 +126,6 @@ def main():
         part['Content-Disposition'] = f'attachment; filename="{file_name}"'
         msg.attach(part)
         logger.info("Attached file path/name: {}/{}".format(file_path, file_name))
-
-        try:
-            server = smtplib.SMTP_SSL(smtp_ssl_host, smtp_ssl_port)
-            server.login(username, password)
-            print(f"Connected to {smtp_ssl_host}:{smtp_ssl_port}")
-            logger.info(f"Connected to {smtp_ssl_host}:{smtp_ssl_port}")
-        except Exception:
-            logger.exception(f"Couldn't connect to {smtp_ssl_host}:{smtp_ssl_port} with the username {username} or the password")
         
         try:
             server.sendmail(sender, target, msg.as_string())
