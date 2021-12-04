@@ -15,8 +15,13 @@ def genderToTitle(gender:str):
     else:
         return None
 
+def make_first_letter_upper(word:str):
+    return word[0].upper() + word[1:].lower()
+
 def fixSurname(surname:str):
-    return surname[0].upper() + surname[1:].lower()
+    words = [x for x in surname.split(" ") if x.isalpha()]
+    words = list(map(make_first_letter_upper, words))
+    return " ".join(words)
 
 def main():
     try:
